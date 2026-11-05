@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { isModelName } from "./names";
 
-// Only the fields the app reads. The ua-tts-bench package defines the full format.
+// Only the fields the app reads. The ua-tts-eval package defines the full format.
 export const manifestSchema = z.object({
   format_version: z.literal(1),
   items: z.record(z.string(), z.object({})),

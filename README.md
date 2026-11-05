@@ -4,7 +4,7 @@ UA TTS Arena is a web application. It compares Ukrainian text-to-speech (TTS) mo
 
 The application shows one sentence and two anonymous audio samples of that sentence. The rater selects the sample that sounds more natural. The application calculates a rating for each model from these votes.
 
-The application gets its audio and its automatic metrics from the [`ua-tts-bench`](https://github.com/maksym-halych/ua-tts-bench) package. The format of the model folders is the only connection between the two projects.
+The application gets its audio and its automatic metrics from the [`ua-tts-bench`](https://github.com/maksym-halych/ua-tts-bench) repository. Its scripts make the audio and the metrics with the [`ua-tts-eval`](https://github.com/maksym-halych/ua-tts-eval) package. The format of the model folders is the only connection between the projects.
 
 ## Contents
 
@@ -50,16 +50,18 @@ Install these items before you start:
 | ----------------------------------- | --------------------------------------------------------- |
 | [Bun](https://bun.sh)               | Installs the packages and runs the application.           |
 | [Docker](https://www.docker.com)    | Runs the local database.                                  |
-| The `ua-tts-bench` repository       | Contains the dataset and the model folders.               |
+| The `ua-tts-eval` repository        | Contains the dataset.                                     |
+| The `ua-tts-bench` repository       | Contains the model folders.                               |
 
 The default configuration expects this folder layout:
 
 ```
-projects/
+ua-tts-benchmark/
 ├── ua-tts-arena/
+├── ua-tts-eval/
+│   └── src/ua_tts_eval/data/dataset.jsonl
 └── ua-tts-bench/
-    ├── src/ua_tts_bench/data/dataset.jsonl
-    └── .cache/ua-tts-bench/
+    └── .cache/ua-tts-eval/
         ├── holos/
         └── omnivoice/
 ```
@@ -127,15 +129,15 @@ The application reads one folder for each model. The folder name is the model na
     └── <item id>.mp3
 ```
 
-The `ua-tts-bench` package makes these files. The `export_mp3` function makes the MP3 copies with aligned loudness.
+The `ua-tts-eval` package makes these files. The `export_mp3` function makes the MP3 copies with aligned loudness.
 
-Do these steps in the `ua-tts-bench` folder to make the MP3 copies for an existing folder:
+Do these steps in the `ua-tts-eval` folder to make the MP3 copies for an existing folder:
 
 1. Make sure that `ffmpeg` is on the `PATH`.
 2. Run the `export_mp3` function. Replace `holos` with the name of the model.
 
    ```bash
-   uv run python -c "from pathlib import Path; from ua_tts_bench import export_mp3; export_mp3(Path('.cache/ua-tts-bench/holos'))"
+   uv run python -c "from pathlib import Path; from ua_tts_eval import export_mp3; export_mp3(Path('../ua-tts-bench/.cache/ua-tts-eval/holos'))"
    ```
 
 A new model is not available to raters until an admin adds it on the **Models** page. A paused model does not get new comparisons.
