@@ -1,0 +1,13 @@
+ua-tts-arena includes and adapts code from TTS Arena.
+
+  Project: https://github.com/TTS-AGI/TTS-Arena
+  Commit:  7a0d13a
+  License: Apache License 2.0 (a copy is in LICENSES/TTS-Arena-Apache-2.0.txt)
+
+Files that contain this code:
+
+  src/lib/bradley-terry.ts            copied, no changes
+  src/lib/bradley-terry.test.ts       copied, no changes
+  src/components/waveform-player.tsx  adapted: new colors and text, a pause control
+                                      and new callbacks
+  src/app/globals.css                 adapted: the color tokens and the card and tag styles
