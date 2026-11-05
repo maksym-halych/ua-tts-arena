@@ -59,7 +59,7 @@ const en = {
   leaderboard: {
     title: "Leaderboard",
     intro:
-      "Raters compare two anonymous samples of the same sentence. Ratings come from a Bradley–Terry fit, and the list is sorted by the lower bound of the 95% confidence interval.",
+      "Raters compare two anonymous samples of the same sentence. Ratings come from a Bradley–Terry fit. The rank (#) uses the lower bound of the 95% confidence interval. Select a column heading to sort the list.",
     rank: "#",
     model: "Model",
     rating: "Rating",
@@ -138,7 +138,7 @@ const uk: Strings = {
   leaderboard: {
     title: "Рейтинг",
     intro:
-      "Слухачі порівнюють два анонімні записи того самого речення. Оцінки обчислено за моделлю Бредлі–Террі, а список упорядковано за нижньою межею 95% довірчого інтервалу.",
+      "Слухачі порівнюють два анонімні записи того самого речення. Оцінки обчислено за моделлю Бредлі–Террі. Місце (№) визначено за нижньою межею 95% довірчого інтервалу. Натисніть заголовок стовпця, щоб упорядкувати список.",
     rank: "№",
     model: "Модель",
     rating: "Оцінка",

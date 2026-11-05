@@ -1,11 +1,36 @@
+import Link from "next/link";
 import { formatPercent } from "@/lib/format";
+import { lowerIsBetter, parseSortKey, sortRows, type SortKey } from "@/lib/leaderboard-sort";
 import { currentUser } from "@/server/auth";
 import { getI18n } from "@/server/i18n";
 import { loadResults } from "@/server/results";
 import { loadSettings } from "@/server/settings";
 
-export default async function LeaderboardPage() {
-  const [{ t }, settings, user] = await Promise.all([getI18n(), loadSettings(), currentUser()]);
+function SortHeader({ column, active, label, numeric }: { column: SortKey; active: SortKey; label: string; numeric?: boolean }) {
+  const isActive = column === active;
+  const ascending = lowerIsBetter(column);
+  return (
+    <th
+      scope="col"
+      className={numeric ? "num" : undefined}
+      aria-sort={isActive ? (ascending ? "ascending" : "descending") : undefined}
+    >
+      <Link
+        href={column === "rank" ? "/leaderboard" : `/leaderboard?sort=${column}`}
+        scroll={false}
+        className={`inline-flex items-center gap-1 hover:text-ink ${isActive ? "font-semibold text-ink" : ""}`}
+      >
+        {label}
+        <span aria-hidden="true" className={isActive ? "" : "text-ink-3"}>
+          {isActive ? (ascending ? "↑" : "↓") : "↕"}
+        </span>
+      </Link>
+    </th>
+  );
+}
+
+export default async function LeaderboardPage({ searchParams }: { searchParams: Promise<{ sort?: string | string[] }> }) {
+  const [{ t }, settings, user, params] = await Promise.all([getI18n(), loadSettings(), currentUser(), searchParams]);
   const text = t.leaderboard;
 
   if (!settings.leaderboardPublic && !user?.isAdmin) {
@@ -13,7 +38,10 @@ export default async function LeaderboardPage() {
   }
 
   const { rows } = await loadResults();
-  const active = rows.filter((row) => !row.paused);
+  const sort = parseSortKey(params.sort);
+  // The rank stays with the model in each order. It always comes from the rating fit.
+  const ranked = rows.filter((row) => !row.paused).map((row, index) => ({ ...row, rank: index + 1 }));
+  const active = sortRows(ranked, sort);
 
   return (
     <div className="flex flex-col gap-5">
@@ -28,19 +56,19 @@ export default async function LeaderboardPage() {
           <table className="data-table">
             <thead>
               <tr>
-                <th scope="col">{text.rank}</th>
+                <SortHeader column="rank" active={sort} label={text.rank} />
                 <th scope="col">{text.model}</th>
-                <th scope="col" className="num">{text.rating}</th>
-                <th scope="col" className="num">{text.winRate}</th>
+                <SortHeader column="rating" active={sort} label={text.rating} numeric />
+                <SortHeader column="winRate" active={sort} label={text.winRate} numeric />
                 <th scope="col" className="num">{text.votes}</th>
-                <th scope="col" className="num">{text.wer}</th>
-                <th scope="col" className="num">{text.cer}</th>
+                <SortHeader column="wer" active={sort} label={text.wer} numeric />
+                <SortHeader column="cer" active={sort} label={text.cer} numeric />
               </tr>
             </thead>
             <tbody>
-              {active.map((row, index) => (
+              {active.map((row) => (
                 <tr key={row.name}>
-                  <td className="text-ink-3">{index + 1}</td>
+                  <td className="text-ink-3">{row.rank}</td>
                   <td className="font-medium">{row.name}</td>
                   <td className="num">{row.games > 0 ? `${row.rating} ± ${row.uncertainty}` : "—"}</td>
                   <td className="num">{formatPercent(row.winRate)}</td>
