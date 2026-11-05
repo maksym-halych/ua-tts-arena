@@ -35,3 +35,19 @@ export function pickComparison(
   if (!picked) return null;
   return random() < 0.5 ? picked : { itemId: picked.itemId, modelA: picked.modelB, modelB: picked.modelA };
 }
+
+/**
+ * Like pickComparison, but after a skip. It picks a different item if one is left.
+ * If only the skipped item is left, it picks that item again, because the rater has not finished.
+ */
+export function pickAfterSkip(
+  skippedItem: string,
+  models: readonly ModelItems[],
+  voted: readonly VotedCombination[],
+  knownItems: ReadonlySet<string>,
+  random: () => number = Math.random,
+): Comparison | null {
+  const others = new Set(knownItems);
+  others.delete(skippedItem);
+  return pickComparison(models, voted, others, random) ?? pickComparison(models, voted, knownItems, random);
+}

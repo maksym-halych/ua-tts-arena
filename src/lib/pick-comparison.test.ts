@@ -1,7 +1,40 @@
 import { describe, expect, test } from "bun:test";
-import { pickComparison } from "./pick-comparison";
+import { pickAfterSkip, pickComparison } from "./pick-comparison";
 
 const known = new Set(["i1", "i2", "i3"]);
+
+describe("pickAfterSkip", () => {
+  const models = [
+    { name: "a", itemIds: ["i1", "i2"] },
+    { name: "b", itemIds: ["i1", "i2"] },
+  ];
+
+  test("picks a different item if one is left", () => {
+    for (let run = 0; run < 50; run++) {
+      expect(pickAfterSkip("i1", models, [], known)?.itemId).toBe("i2");
+    }
+  });
+
+  test("does not pick another model pair for the skipped item", () => {
+    const three = [...models, { name: "c", itemIds: ["i1"] }];
+    for (let run = 0; run < 50; run++) {
+      expect(pickAfterSkip("i1", three, [], known)?.itemId).toBe("i2");
+    }
+  });
+
+  test("picks the skipped item again if nothing else is left", () => {
+    const voted = [{ itemId: "i2", winner: "a", loser: "b" }];
+    expect(pickAfterSkip("i1", models, voted, known)?.itemId).toBe("i1");
+  });
+
+  test("returns null if the rater voted on everything", () => {
+    const voted = [
+      { itemId: "i1", winner: "a", loser: "b" },
+      { itemId: "i2", winner: "b", loser: "a" },
+    ];
+    expect(pickAfterSkip("i1", models, voted, known)).toBeNull();
+  });
+});
 
 describe("pickComparison", () => {
   test("uses only items that both models have", () => {

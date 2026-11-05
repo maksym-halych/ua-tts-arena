@@ -1,6 +1,6 @@
 import "server-only";
 import { requiredListenMs } from "@/lib/listening";
-import { pickComparison } from "@/lib/pick-comparison";
+import { pickAfterSkip, pickComparison } from "@/lib/pick-comparison";
 import { loadDataset, loadMetrics } from "./catalog";
 import type { Tables } from "./database.types";
 import { check, db, fetchAll, maybe, must } from "./supabase";
@@ -26,9 +26,9 @@ async function durationMs(model: string, itemId: string): Promise<number> {
 
 /**
  * Returns the open round of the rater, or starts a new one. A reload gets the same
- * samples, so a rater can't skip a comparison until a preferred pair appears.
+ * samples. Only skipRound changes them. A new round after a skip avoids skippedItem.
  */
-export async function openRound(rater: { id: string; email: string }): Promise<RoundResult> {
+export async function openRound(rater: { id: string; email: string }, skippedItem?: string): Promise<RoundResult> {
   const database = db();
   check(await database.from("raters").upsert({ id: rater.id, email: rater.email }, { onConflict: "id" }));
 
@@ -50,11 +50,11 @@ export async function openRound(rater: { id: string; email: string }): Promise<R
   );
   const candidates = models.map((model) => ({ name: model.name, itemIds: model.item_ids }));
   const known = new Set(dataset.keys());
-  const comparison = pickComparison(
-    candidates,
-    voted.map((vote) => ({ itemId: vote.item_id, winner: vote.winner, loser: vote.loser })),
-    known,
-  );
+  const votedCombinations = voted.map((vote) => ({ itemId: vote.item_id, winner: vote.winner, loser: vote.loser }));
+  const comparison =
+    skippedItem === undefined
+      ? pickComparison(candidates, votedCombinations, known)
+      : pickAfterSkip(skippedItem, candidates, votedCombinations, known);
   if (!comparison) return { status: pickComparison(candidates, [], known) ? "done" : "unavailable" };
 
   const [durationA, durationB] = await Promise.all([
@@ -77,4 +77,16 @@ export async function openRound(rater: { id: string; email: string }): Promise<R
   if (inserted.error?.code === "23505") return openRound(rater);
   const round = must(inserted);
   return { status: "ready", round, text: dataset.get(round.item_id) ?? "" };
+}
+
+/**
+ * Deletes the round and starts another, with no vote. The comparison stays available
+ * for a later round. Returns null if the rater has no such round.
+ */
+export async function skipRound(rater: { id: string; email: string }, roundId: string): Promise<RoundResult | null> {
+  const database = db();
+  const round = maybe(await database.from("rounds").select("item_id").eq("id", roundId).eq("rater_id", rater.id).maybeSingle());
+  if (!round) return null;
+  check(await database.from("rounds").delete().eq("id", roundId));
+  return openRound(rater, round.item_id);
 }

@@ -19,8 +19,10 @@ type State =
   | { phase: "listen"; round: RoundData }
   | { phase: "voted"; round: RoundData; chosen: Side; models: RevealedModels };
 
-async function requestRound(): Promise<State> {
-  const response = await fetch("/api/rounds", { method: "POST" });
+async function requestRound(skippedRound?: string): Promise<State> {
+  const response = await fetch(skippedRound ? `/api/rounds/${skippedRound}/skip` : "/api/rounds", { method: "POST" });
+  // Another tab already finished the skipped round. Get the current one.
+  if (skippedRound && response.status === 404) return requestRound();
   if (response.status === 401) return { phase: "signedOut" };
   if (!response.ok) return { phase: "failed" };
   const body = (await response.json()) as { status: "ready"; round: RoundData } | { status: "done" | "unavailable" };
@@ -31,9 +33,9 @@ export function Arena({ t }: { t: Strings["arena"] }) {
   const router = useRouter();
   const [state, setState] = useState<State>({ phase: "loading" });
 
-  const nextRound = useCallback(() => {
+  const nextRound = useCallback((skippedRound?: string) => {
     setState({ phase: "loading" });
-    requestRound()
+    requestRound(skippedRound)
       .then(setState)
       .catch(() => setState({ phase: "failed" }));
   }, []);
@@ -60,7 +62,7 @@ export function Arena({ t }: { t: Strings["arena"] }) {
     return <p className="py-16 text-center text-ink-2">{t.loading}</p>;
   }
   if (state.phase === "failed") {
-    return <Message title={t.error} actionLabel={t.retry} onAction={nextRound} />;
+    return <Message title={t.error} actionLabel={t.retry} onAction={() => nextRound()} />;
   }
   if (state.phase === "done") return <Message title={t.doneTitle} body={t.doneBody} />;
   if (state.phase === "unavailable") return <Message title={t.unavailableTitle} body={t.unavailableBody} />;
@@ -72,8 +74,9 @@ export function Arena({ t }: { t: Strings["arena"] }) {
       round={state.round}
       voted={state.phase === "voted" ? state : null}
       onVoted={(chosen, models) => setState({ phase: "voted", round: state.round, chosen, models })}
-      onRoundGone={nextRound}
-      onNext={nextRound}
+      onRoundGone={() => nextRound()}
+      onNext={() => nextRound()}
+      onSkip={() => nextRound(state.round.id)}
     />
   );
 }
@@ -109,6 +112,7 @@ function Round({
   onVoted,
   onRoundGone,
   onNext,
+  onSkip,
 }: {
   t: Strings["arena"];
   round: RoundData;
@@ -116,6 +120,7 @@ function Round({
   onVoted: (chosen: Side, models: RevealedModels) => void;
   onRoundGone: () => void;
   onNext: () => void;
+  onSkip: () => void;
 }) {
   const router = useRouter();
   const players = { a: useRef<WaveformHandle>(null), b: useRef<WaveformHandle>(null) };
@@ -227,6 +232,14 @@ function Round({
           );
         })}
       </div>
+
+      {!voted && (
+        <div className="flex justify-center">
+          <button onClick={onSkip} disabled={sending} className="btn px-4 py-2">
+            {t.skip}
+          </button>
+        </div>
+      )}
 
       {notice && (
         <p role="alert" className="text-center text-sm text-danger">
