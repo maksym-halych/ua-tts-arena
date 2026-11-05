@@ -6,7 +6,7 @@ const metrics = {
   format_version: 1,
   items: {
     i1: { transcript: "t", wer: 0, cer: 0.1, duration_s: 2, rtf: 0.5 },
-    i2: { transcript: "t", wer: 0.5, cer: 0.3, duration_s: 3, rtf: 0.5 },
+    i2: { transcript: "t", wer: 0.5, cer: 0.3, duration_s: 3, rtf: 1.5 },
   },
 };
 const dataset = new Set(["i1", "i2"]);
@@ -56,6 +56,7 @@ describe("averageMetrics", () => {
     const averages = averageMetrics(metrics as never)!;
     expect(averages.wer).toBeCloseTo(0.25);
     expect(averages.cer).toBeCloseTo(0.2);
+    expect(averages.rtf).toBeCloseTo(1);
   });
 
   test("is null with no items", () => {

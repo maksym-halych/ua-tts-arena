@@ -1,11 +1,11 @@
-export const SORT_KEYS = ["rank", "rating", "winRate", "wer", "cer"] as const;
+export const SORT_KEYS = ["rank", "rating", "winRate", "wer", "cer", "rtf"] as const;
 export type SortKey = (typeof SORT_KEYS)[number];
 
 export type SortableRow = {
   rating: number;
   games: number;
   winRate: number | null;
-  metrics: { wer: number; cer: number } | null;
+  metrics: { wer: number; cer: number; rtf: number } | null;
 };
 
 /** The default order, from the server, is the rank. An unknown value in the URL also gets it. */
@@ -13,9 +13,9 @@ export function parseSortKey(value: unknown): SortKey {
   return SORT_KEYS.includes(value as SortKey) ? (value as SortKey) : "rank";
 }
 
-/** A lower value is better for the rank, WER and CER. A higher value is better for the others. */
+/** A lower value is better for the rank, WER, CER and RTF. A higher value is better for the others. */
 export function lowerIsBetter(key: SortKey): boolean {
-  return key === "rank" || key === "wer" || key === "cer";
+  return key === "rank" || key === "wer" || key === "cer" || key === "rtf";
 }
 
 function sortValue(row: SortableRow, key: Exclude<SortKey, "rank">): number | null {
@@ -29,6 +29,8 @@ function sortValue(row: SortableRow, key: Exclude<SortKey, "rank">): number | nu
       return row.metrics?.wer ?? null;
     case "cer":
       return row.metrics?.cer ?? null;
+    case "rtf":
+      return row.metrics?.rtf ?? null;
   }
 }
 

@@ -2,10 +2,10 @@ import { describe, expect, test } from "bun:test";
 import { parseSortKey, sortRows } from "./leaderboard-sort";
 
 const rows = [
-  { name: "a", rating: 1500, games: 40, winRate: 0.5, metrics: { wer: 0.3, cer: 0.1 } },
-  { name: "b", rating: 1600, games: 4, winRate: 0.75, metrics: { wer: 0.1, cer: 0.2 } },
+  { name: "a", rating: 1500, games: 40, winRate: 0.5, metrics: { wer: 0.3, cer: 0.1, rtf: 0.5 } },
+  { name: "b", rating: 1600, games: 4, winRate: 0.75, metrics: { wer: 0.1, cer: 0.2, rtf: 2 } },
   { name: "c", rating: 1400, games: 40, winRate: 0.25, metrics: null },
-  { name: "new", rating: 1500, games: 0, winRate: null, metrics: { wer: 0.2, cer: 0.05 } },
+  { name: "new", rating: 1500, games: 0, winRate: null, metrics: { wer: 0.2, cer: 0.05, rtf: 0.1 } },
 ];
 
 function order(key: Parameters<typeof sortRows>[1]): string[] {
@@ -22,9 +22,10 @@ describe("sortRows", () => {
     expect(order("winRate")).toEqual(["b", "a", "c", "new"]);
   });
 
-  test("puts the lowest WER and CER first", () => {
+  test("puts the lowest WER, CER and RTF first", () => {
     expect(order("wer")).toEqual(["b", "new", "a", "c"]);
     expect(order("cer")).toEqual(["new", "a", "b", "c"]);
+    expect(order("rtf")).toEqual(["new", "a", "b", "c"]);
   });
 
   test("keeps the given order for equal values", () => {

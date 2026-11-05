@@ -1,4 +1,4 @@
-import { formatPercent } from "@/lib/format";
+import { formatPercent, formatRtf } from "@/lib/format";
 import { headToHead } from "@/lib/standings";
 import { requireAdmin } from "@/server/auth";
 import { loadResults } from "@/server/results";
@@ -26,6 +26,7 @@ export default async function ResultsPage() {
                 <th scope="col" className="num">Votes</th>
                 <th scope="col" className="num">Avg WER</th>
                 <th scope="col" className="num">Avg CER</th>
+                <th scope="col" className="num">Avg RTF</th>
               </tr>
             </thead>
             <tbody>
@@ -39,6 +40,7 @@ export default async function ResultsPage() {
                   <td className="num">{row.games}</td>
                   <td className="num">{formatPercent(row.metrics?.wer)}</td>
                   <td className="num">{formatPercent(row.metrics?.cer)}</td>
+                  <td className="num">{formatRtf(row.metrics?.rtf)}</td>
                 </tr>
               ))}
             </tbody>

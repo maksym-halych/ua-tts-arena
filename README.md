@@ -29,7 +29,7 @@ The application has these parts for raters:
 | Page         | Function                                                                          |
 | ------------ | --------------------------------------------------------------------------------- |
 | Vote         | Shows a comparison. The rater must sign in to vote. The rater can skip a sentence. |
-| Leaderboard  | Shows the rating, win rate, votes, average WER and average CER of each model. The rater can sort by rank, rating, win rate, WER or CER. |
+| Leaderboard  | Shows the rating, win rate, votes, average WER, average CER and average RTF of each model. The rater can sort by rank, rating, win rate, WER, CER or RTF. |
 | Sign in      | Signs in with a Google account, or with a local form on a local computer.         |
 
 The pages for raters are available in English and Ukrainian. The admin pages are available in English only.

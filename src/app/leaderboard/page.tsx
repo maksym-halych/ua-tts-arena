@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatPercent } from "@/lib/format";
+import { formatPercent, formatRtf } from "@/lib/format";
 import { lowerIsBetter, parseSortKey, sortRows, type SortKey } from "@/lib/leaderboard-sort";
 import { currentUser } from "@/server/auth";
 import { getI18n } from "@/server/i18n";
@@ -63,6 +63,7 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
                 <th scope="col" className="num">{text.votes}</th>
                 <SortHeader column="wer" active={sort} label={text.wer} numeric />
                 <SortHeader column="cer" active={sort} label={text.cer} numeric />
+                <SortHeader column="rtf" active={sort} label={text.rtf} numeric />
               </tr>
             </thead>
             <tbody>
@@ -75,6 +76,7 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
                   <td className="num">{row.games}</td>
                   <td className="num">{formatPercent(row.metrics?.wer)}</td>
                   <td className="num">{formatPercent(row.metrics?.cer)}</td>
+                  <td className="num">{formatRtf(row.metrics?.rtf)}</td>
                 </tr>
               ))}
             </tbody>

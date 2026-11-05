@@ -15,6 +15,7 @@ export const metricsSchema = z.object({
       wer: z.number(),
       cer: z.number(),
       duration_s: z.number(),
+      rtf: z.number(),
     }),
   ),
 });
@@ -74,7 +75,7 @@ export function checkFolder(name: string, files: FolderFiles, datasetIds: Readon
   return { problems, notes, itemIds: [...files.mp3Ids] };
 }
 
-export type MetricAverages = { wer: number; cer: number };
+export type MetricAverages = { wer: number; cer: number; rtf: number };
 
 /** A plain average over the items in metrics.json. The package does not aggregate metrics. */
 export function averageMetrics(metrics: Metrics): MetricAverages | null {
@@ -83,5 +84,6 @@ export function averageMetrics(metrics: Metrics): MetricAverages | null {
   return {
     wer: items.reduce((sum, item) => sum + item.wer, 0) / items.length,
     cer: items.reduce((sum, item) => sum + item.cer, 0) / items.length,
+    rtf: items.reduce((sum, item) => sum + item.rtf, 0) / items.length,
   };
 }
