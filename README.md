@@ -304,6 +304,10 @@ This repository uses [Commitizen](https://commitizen-tools.github.io/commitizen/
 uvx --from commitizen cz commit
 ```
 
+## License
+
+MIT. See `LICENSE`. The third-party code below keeps its own license.
+
 ## Third-party code
 
 This repository contains code from [TTS Arena](https://github.com/TTS-AGI/TTS-Arena), under the Apache License 2.0. See `NOTICE` for the list of files, and `LICENSES/TTS-Arena-Apache-2.0.txt` for the license.
